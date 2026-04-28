@@ -1,30 +1,30 @@
-version: "3.8"
-
 services:
   medspa:
     build:
-      context: ..
-      dockerfile: deploy/Dockerfile
+      context: .
+      dockerfile: Dockerfile
     container_name: medspa-consultation
-    restart: always
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: file:/app/data/medspa.db
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      RUN_SEED: ${RUN_SEED:-true}
     ports:
       - "${APP_PORT:-15000}:3000"
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=file:/app/data/medspa.db
-      - JWT_SECRET=${JWT_SECRET:-change-me-to-a-random-secret-key}
     volumes:
       - medspa_data:/app/data
       - medspa_uploads:/app/public/uploads
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/auth/session"]
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/api/auth/session"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
 
 volumes:
   medspa_data:
-    driver: local
   medspa_uploads:
-    driver: local

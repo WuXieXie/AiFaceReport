@@ -4,7 +4,7 @@ FROM node:20-bookworm-slim AS base
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends openssl ca-certificates fontconfig fonts-noto-cjk && \
+    apt-get install -y --no-install-recommends openssl ca-certificates fontconfig fonts-noto-cjk wget && \
     rm -rf /var/lib/apt/lists/*
 
 # ---- Build Stage ----
@@ -42,9 +42,11 @@ COPY --from=builder /app/node_modules ./node_modules
 
 # Copy seed script
 COPY --from=builder /app/package.json ./package.json
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
 
 # Create data & uploads directories
 RUN mkdir -p /app/data /app/public/uploads && \
+    chmod +x /app/docker-entrypoint.sh && \
     chown -R nextjs:nodejs /app
 
 USER nextjs
@@ -55,5 +57,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 ENV DATABASE_URL="file:/app/data/medspa.db"
 
-# Start: push schema then run server
-CMD ["sh", "-c", "npx prisma db push --skip-generate && node server.js"]
+CMD ["./docker-entrypoint.sh"]
