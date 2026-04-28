@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 管理员
+model Admin {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  name      String
+  role      String   @default("admin") // super_admin, admin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 机构
+model Organization {
+  id          String     @id @default(cuid())
+  name        String
+  logo        String?
+  address     String?
+  phone       String?
+  description String?
+  status      String     @default("active") // active, disabled
+  credits     Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  employees   Employee[]
+  reports     Report[]
+  creditLogs  CreditLog[]
+}
+
+// 员工（属于机构）
+model Employee {
+  id             String       @id @default(cuid())
+  username       String       @unique
+  password       String
+  name           String
+  phone          String?
+  avatar         String?
+  role           String       @default("staff") // owner, manager, staff
+  status         String       @default("active") // active, disabled
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  reports        Report[]
+}
+
+// 分析报告
+model Report {
+  id             String       @id @default(cuid())
+  title          String?
+  imageUrl       String       // 原始上传图片
+  overlayUrl     String?      // 提拉线叠加图
+  aiReportUrl    String?      // AI生成完整报告图
+  textReport     String?      // 文字报告JSON
+  overallScore   Float?       // 综合评分
+  dimensions     String?      // 六维指数JSON
+  diagnosis      String?      // 面部问题诊断JSON
+  recommendations String?     // 推荐改善方案JSON
+  comparison     String?      // 效果预期对比JSON
+  status         String       @default("pending") // pending, analyzing, completed, failed
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  employeeId     String
+  employee       Employee     @relation(fields: [employeeId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+// 积分记录
+model CreditLog {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  amount         Int          // 正数为充值，负数为消费
+  balance        Int          // 操作后余额
+  type           String       // recharge, consume, gift, refund
+  description    String?
+  createdAt      DateTime     @default(now())
+}
+
+// 系统配置
+model SystemConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  label     String?
+  group     String?  // api, prompt, general
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 项目类别
+model ProjectCategory {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  icon        String?
+  sortOrder   Int      @default(0)
+  status      String   @default("active") // active, disabled
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 提示词预设
+model PromptPreset {
+  id          String   @id @default(cuid())
+  name        String
+  category    String?  // analysis, report, overlay
+  content     String
+  isDefault   Boolean  @default(false)
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

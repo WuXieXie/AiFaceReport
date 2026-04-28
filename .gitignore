@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+.next/
+out/
+dist/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+1panel-medspa-deploy/.env
+
+# Runtime data
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+prisma/dev.db
+prisma/*.db
+public/uploads/
+data/
+
+# Logs and generated packages
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+1panel-medspa-deploy.zip
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
